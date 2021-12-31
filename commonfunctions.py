@@ -18,6 +18,11 @@ from skimage.feature import canny
 from skimage.measure import label
 from skimage.color import label2rgb
 
+import cv2
+import os
+from PIL import Image
+import matplotlib.pyplot as plt
+
 
 # Edges
 from skimage.filters import sobel_h, sobel, sobel_v,roberts, prewitt

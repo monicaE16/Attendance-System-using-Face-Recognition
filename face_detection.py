@@ -4,6 +4,10 @@ import cv2
 import math
 import timeit
 from multiprocessing import Process
+import joblib
+
+filename = 'finalized_model.sav'
+finalized_model_1 = joblib.load(filename)
 
 def cut_image(img,windowsize_r,windowsize_c):
     tiles=[]
@@ -130,6 +134,7 @@ def HOG_descriptor(img):
 
 
 def search_for_face(img,division_factor1,division_factor2,step):
+    partitions = []
     x,y=img.shape
     l,w=(int(img.shape[0]/division_factor1),int(img.shape[1]/division_factor2))
     print("mememem")
@@ -142,3 +147,5 @@ def search_for_face(img,division_factor1,division_factor2,step):
             if prediction!=0:
                 print(prediction)
                 show_images([partition])
+                partitions.append(partition)
+    return partitions
