@@ -2,28 +2,46 @@ from face_detection import *
 from face_recognition import *
 import joblib
 from matplotlib import cm
+import json
+import numpy as np
+import time
+
 
 filename = 'finalized_model.sav'
 finalized_model_1 = joblib.load(filename)
 
-[X, y] = read_images() 
-X_rows = as_row_matrix(X)
-[eigenvalues, eigenvectors, mu] = pca (as_row_matrix(X), y, 15)
-print(y)
+f= open("pca.json","r")
+data = json.load(f)
+print(data)
+f.close()
+mu=np.array(data['mu'])
+eigenvectors=np.array(data['eigenvectors'])
 
-projections = np.dot (X_rows - mu , eigenvectors)
-# define a video capture object
+[X, y] = read_images(image_path='DataBase')
+X_rows = as_row_matrix(X)
+projections = np.dot(X_rows - mu, eigenvectors)
+
 vid = cv2.VideoCapture(0)
 #(1.1,1.7),(1.5,3),(2,4),
-scales=[(1.1,1.7),(2,3),(3,4),(4,6)]
+scales=[(1.1,1.7),(2,3),(3,4)]
+resize=(150,150)
+rate=30
 while(True):
-    partitions = []  
+    start = time.time()
+    partitions = []
+    coordinates=[]
     # Capture the video frame
     # by frame
     ret, frame = vid.read()
-    cv2.imshow('frame', frame)
+    print(frame.shape)
+    rescaling_factor=(frame.shape[0]/resize[0],frame.shape[1]/resize[1])
+    print(rescaling_factor)
     for i,j in scales:
-        partitions = partitions + search_for_face(cv2.resize(rgb2gray(frame), (150,150), interpolation = cv2.INTER_AREA),i,j,8)
+        new_partitions,new_coordinates=search_for_face(cv2.resize(rgb2gray(frame), resize, interpolation = cv2.INTER_AREA),i,j,8)
+        for coordinate in new_coordinates:
+            print(coordinate)
+            cv2.rectangle(frame,(round(coordinate[1]*rescaling_factor[1]),round(coordinate[0]*rescaling_factor[0])),(round(coordinate[3]*rescaling_factor[1]),round(coordinate[2]*rescaling_factor[0])),color=(0,255,0),thickness=2)
+        partitions = partitions + new_partitions
     for partition in partitions:
         image = Image.fromarray(np.uint8(cm.gist_earth(partition)*255))
         image = image.convert ("L")
@@ -32,10 +50,13 @@ while(True):
         test_image = np. asarray (image , dtype =np. uint8 )
         predicted = predict (eigenvectors, mu , projections, y, test_image)
         print(y[predicted])
+    print("hello")
+    end = time.time()
+    print(end - start)
     # Display the resulting frame
-    image = Image.open("test/ranime.10.jpeg")
+    #image = Image.open("test/ranime.10.jpeg")
 
-    
+    cv2.imshow('frame', frame)
     # test_image = np. asarray (image , dtype =np. uint8 )
     # predicted = predict (eigenvectors, mu , projections, y, test_imageq)
     # print(y[predicted])

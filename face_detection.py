@@ -135,6 +135,7 @@ def HOG_descriptor(img):
 
 def search_for_face(img,division_factor1,division_factor2,step):
     partitions = []
+    coordinates=[]
     x,y=img.shape
     l,w=(int(img.shape[0]/division_factor1),int(img.shape[1]/division_factor2))
     print("mememem")
@@ -145,7 +146,8 @@ def search_for_face(img,division_factor1,division_factor2,step):
             partition=img[row:row+l,col:col+w]
             prediction=finalized_model_1.predict(HOG_descriptor(cv2.resize(partition, (48,64), interpolation = cv2.INTER_AREA)).reshape(1, -1),)
             if prediction!=0:
+                coordinates.append((row,col,row+l,col+w))
                 print(prediction)
-                show_images([partition])
+                #show_images([partition])
                 partitions.append(partition)
-    return partitions
+    return partitions,coordinates

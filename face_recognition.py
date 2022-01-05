@@ -1,6 +1,7 @@
 from commonfunctions import *
 
-IMAGE_DIR = 'yalefaces'
+IMAGE_DIR = 'images'
+import json
 DEFAULT_SIZE = [250, 250] 
 
 
@@ -15,7 +16,8 @@ def read_images(image_path=IMAGE_DIR, default_size=DEFAULT_SIZE):
         if (default_size is not None ):
             image = image.resize (default_size , Image.ANTIALIAS )
         images.append(np.asarray (image , dtype =np. uint8 ))
-        image_name_ = image_name.partition('.')[0]
+        #image_name_ = image_name.partition('.')[0]
+        image_name_ = image_name[:3]
         images_names.append(image_name_)
     #images_names = list(dict.fromkeys(images_names))
     images = np.array(images)
@@ -94,3 +96,21 @@ def subplot ( title , images , rows , cols , sptitle ="", sptitles =[] , colorma
         plt.show()
     else:
         fig.savefig( filename )
+def train_pca():
+    [X, y] = read_images()
+    X_rows = as_row_matrix(X)
+    [eigenvalues, eigenvectors, mu] = pca(as_row_matrix(X), y, 15)
+    print(y)
+    # getting features from the given input dataset
+    #[X, y] = read_images(image_path='DataBase')
+    #X_rows = as_row_matrix(X)
+    #projections = np.dot(X_rows - mu, eigenvectors)
+    #print(projections.shape)
+    # define a video capture object
+    #print({'eigenvalues': eigenvalues, 'eigenvectors': eigenvectors, 'mu': mu})
+    jsonobject = json.dumps({'eigenvalues': eigenvalues.tolist(), 'eigenvectors': eigenvectors.tolist(), 'mu': mu.tolist()})
+    print(jsonobject)
+    #jsonFile = open("pca.json", "w")
+    with open("pca.json", "w") as file:
+        file.write(jsonobject)
+        file.close()
