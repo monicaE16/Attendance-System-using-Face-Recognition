@@ -5,7 +5,7 @@ import json
 DEFAULT_SIZE = [250, 250] 
 
 
-def read_images(image_path=IMAGE_DIR, default_size=DEFAULT_SIZE):
+def read_images(image_path=IMAGE_DIR, default_size=DEFAULT_SIZE,data="test_set"):
     images = []
     images_names = []
     image_names = [image for image in os.listdir(image_path) if not image.startswith('.')]
@@ -17,7 +17,10 @@ def read_images(image_path=IMAGE_DIR, default_size=DEFAULT_SIZE):
             image = image.resize (default_size , Image.ANTIALIAS )
         images.append(np.asarray (image , dtype =np. uint8 ))
         #image_name_ = image_name.partition('.')[0]
-        image_name_ = image_name[:3]
+        if data=="test_set":
+            image_name_=image_name.split(".")[0]
+        else:
+            image_name_ = image_name[:3]
         images_names.append(image_name_)
     #images_names = list(dict.fromkeys(images_names))
     images = np.array(images)
