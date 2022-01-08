@@ -1,32 +1,56 @@
 from commonfunctions import *
 
-IMAGE_DIR = 'images'
+IMAGE_DIR = 'data'
 import json
-DEFAULT_SIZE = [250, 250] 
+DEFAULT_SIZE = [200, 200] 
 
 
-def read_images(image_path=IMAGE_DIR, default_size=DEFAULT_SIZE,data="test_set"):
+# def read_images(image_path=IMAGE_DIR, default_size=DEFAULT_SIZE,data="test_set"):
+#     images = []
+#     images_names = []
+#     image_names = [image for image in os.listdir(image_path) if not image.startswith('.')]
+#     for image_name in image_names:
+#         image = Image.open (os.path.join(image_path, image_name))
+#         image = image.convert ("L")
+#         # resize to given size (if given )
+#         if (default_size is not None ):
+#             image = image.resize (default_size , Image.ANTIALIAS )
+#         images.append(np.asarray (image , dtype =np. uint8 ))
+#         #image_name_ = image_name.partition('.')[0]
+#         if data=="test_set":
+#             image_name_=image_name.split(".")[0]
+#         else:
+#             image_name_ = image_name[:3]
+#         images_names.append(image_name_)
+#     #images_names = list(dict.fromkeys(images_names))
+#     images = np.array(images)
+#     return [images,images_names]
+
+
+
+def read_images(image_path=IMAGE_DIR, default_size=DEFAULT_SIZE):
     images = []
     images_names = []
-    image_names = [image for image in os.listdir(image_path) if not image.startswith('.')]
-    for image_name in image_names:
-        image = Image.open (os.path.join(image_path, image_name))
-        image = image.convert ("L")
-        # resize to given size (if given )
-        if (default_size is not None ):
-            image = image.resize (default_size , Image.ANTIALIAS )
-        images.append(np.asarray (image , dtype =np. uint8 ))
-        #image_name_ = image_name.partition('.')[0]
-        if data=="test_set":
-            image_name_=image_name.split(".")[0]
-        else:
-            image_name_ = image_name[:3]
-        images_names.append(image_name_)
-    #images_names = list(dict.fromkeys(images_names))
-    images = np.array(images)
+    image_dirs = [image for image in os.listdir(image_path) if not image.startswith('.')]
+    for image_dir in image_dirs:
+        print(image_dir)
+        dir_path = os.path.join(image_path, image_dir)
+        image_names = [image for image in os.listdir(dir_path) if not image.startswith('.')]
+        for image_name in image_names:
+            image = Image.open (os.path.join(dir_path, image_name))
+            image = image.convert ("L")
+            # resize to given size (if given )
+            if (default_size is not None ):
+                image = image.resize (default_size , Image.ANTIALIAS )
+            images.append(np.asarray (image , dtype =np. uint8 ))
+            images_names.append(image_dir)
     return [images,images_names]
 
+
+
+
 def as_row_matrix (X):
+    print('inside Reshaping...')
     if len (X) == 0:
         return np. array ([])
     mat = np. empty ((0 , X [0].size ), dtype =X [0]. dtype )
@@ -41,6 +65,7 @@ def get_number_of_components_to_preserve_variance(eigenvalues, variance=.95):
         
 def pca (X, y, num_components =0):
     # n : samples , d : dimension of each sample as a row
+    print("starting PCA.....")
     [n,d] = X.shape    
     if ( num_components <= 0) or ( num_components >n):
         num_components = n
@@ -55,7 +80,10 @@ def pca (X, y, num_components =0):
         eigenvectors = np.dot(X.T, eigenvectors )
         for i in range (n):
             eigenvectors [:,i] = eigenvectors [:,i]/ np.linalg.norm( eigenvectors [:,i])
+            
     # sort eigenvectors descending by their eigenvalue
+    
+    print('Outside PCA')
     idx = np.argsort (- eigenvalues )
     eigenvalues = eigenvalues [idx ]
     eigenvectors = eigenvectors [:, idx ]
@@ -102,7 +130,7 @@ def subplot ( title , images , rows , cols , sptitle ="", sptitles =[] , colorma
 def train_pca():
     [X, y] = read_images()
     X_rows = as_row_matrix(X)
-    [eigenvalues, eigenvectors, mu] = pca(as_row_matrix(X), y, 15)
+    [eigenvalues, eigenvectors, mu] = pca(X_rows, y, 15)
     print(y)
     # getting features from the given input dataset
     #[X, y] = read_images(image_path='DataBase')
