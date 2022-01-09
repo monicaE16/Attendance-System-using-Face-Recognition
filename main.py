@@ -9,15 +9,17 @@ import time
 
 filename = 'finalized_model.sav'
 finalized_model_1 = joblib.load(filename)
-
+print("before loading")
 f= open("pca.json","r")
+print("openning")
 data = json.load(f)
-print(data)
+print("loading")
 f.close()
+print("terminate")
 mu=np.array(data['mu'])
 eigenvectors=np.array(data['eigenvectors'])
 
-[X, y] = read_images(image_path='DataBase')
+[X, y] = read_images(image_path='dataset')
 X_rows = as_row_matrix(X)
 projections = np.dot(X_rows - mu, eigenvectors)
 
@@ -39,13 +41,18 @@ while(True):
     print(rescaling_factor)
     coordinates=[]
     counter+=1
+    points = []
+    
     for i,j in scales:
         new_partitions,new_coordinates=search_for_face(cv2.resize(rgb2gray(frame), resize, interpolation = cv2.INTER_AREA),i,j,8)
-
+        coors = np.asarray(new_coordinates)
+        points = non_max_suppression_fast(coors)
+        if(len(points)):
+            cv2.rectangle(frame,(round(int(points[1])*rescaling_factor[1]),round(int(points[0])*rescaling_factor[0])),(round(int(points[3])*rescaling_factor[1]),round(int(points[2])*rescaling_factor[0])),color=(0,255,0),thickness=2)
         for coordinate in new_coordinates:
             coordinates.append(coordinate)
             print(coordinate)
-            cv2.rectangle(frame,(round(coordinate[1]*rescaling_factor[1]),round(coordinate[0]*rescaling_factor[0])),(round(coordinate[3]*rescaling_factor[1]),round(coordinate[2]*rescaling_factor[0])),color=(0,255,0),thickness=2)
+            #cv2.rectangle(frame,(round(coordinate[1]*rescaling_factor[1]),round(coordinate[0]*rescaling_factor[0])),(round(coordinate[3]*rescaling_factor[1]),round(coordinate[2]*rescaling_factor[0])),color=(0,255,0),thickness=2)
         partitions = partitions + new_partitions
     i=0
     for partition in partitions:
@@ -54,14 +61,17 @@ while(True):
         image = Image.fromarray(np.uint8(cm.gist_earth(partition)*255))
         image = image.convert ("L")
 
-        image = image.resize ((250,250), Image.ANTIALIAS )
+        image = image.resize ((200,200), Image.ANTIALIAS )
         test_image = np. asarray (image , dtype =np. uint8 )
         predicted = predict (eigenvectors, mu , projections, y, test_image)
-        cv2.putText(img=frame, text=y[predicted], org=((round(coordinate[1]*rescaling_factor[1])), round(coordinate[0]*rescaling_factor[0])), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=1, color=(0, 0, 0),thickness=2)
+        cv2.putText(img=frame, text=y[predicted], org=(50, 50), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=1, color=(0, 0, 0),thickness=2)
+        # q
+        #else:
+            #cv2.putText(img=frame, text=y[predicted], org=((round(coordinate[1]*rescaling_factor[1])), round(coordinate[0]*rescaling_factor[0])), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=1, color=(0, 0, 0),thickness=2)
         print(y[predicted])
     print("hello")
     end = time.time()
-    print(end - start)
+    print("start",start)
     # Display the resulting frame
     #image = Image.open("test/ranime.10.jpeg")
 
@@ -72,8 +82,10 @@ while(True):
     # the 'q' button is set as the
     # quitting button you may use any
     # desired button of your choice
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    cv2.waitKey(1000)
+    if cv2.waitKey(1000) & 0xFF == ord('q'):
         break
+    print("start",start)
 # After the loop release the cap object
 vid.release()
 # Destroy all the windows
