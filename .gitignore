@@ -2,3 +2,6 @@ pca.json
 /DataBase
 /images
 /data
+/.spyproject
+/Dataset
+/__pycache__

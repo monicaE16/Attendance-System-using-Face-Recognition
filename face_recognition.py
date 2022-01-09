@@ -132,16 +132,10 @@ def train_pca():
     [X, y] = read_images()
     X_rows = as_row_matrix(X)
     [eigenvalues, eigenvectors, mu] = pca(X_rows, y, 15)
-    print(y)
-    # getting features from the given input dataset
-    #[X, y] = read_images(image_path='DataBase')
-    #X_rows = as_row_matrix(X)
-    #projections = np.dot(X_rows - mu, eigenvectors)
-    #print(projections.shape)
-    # define a video capture object
-    #print({'eigenvalues': eigenvalues, 'eigenvectors': eigenvectors, 'mu': mu})
+    #print(y)
+  
     jsonobject = json.dumps({'eigenvectors': eigenvectors.tolist(), 'mu': mu.tolist()}, indent=4)
-    print(jsonobject)
+    #print(jsonobject)
     #jsonFile = open("pca.json", "w")
     with open("pca.json", "w") as file:
         file.write(jsonobject)
